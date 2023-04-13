@@ -1,0 +1,129 @@
+#include "DaisyDuino.h"
+DaisyHardware hw;
+size_t num_channels;
+static Oscillator osc;
+
+//IN
+int Apin = A3;
+int Dpin1 = D1;
+int Dpin2 = D2;
+
+// analog read
+int dato;
+// digital read
+bool bit1;
+bool bit2;
+
+// array of frequencies
+float MyFreqs[]={220.00, 233.08, 246.94, \
+                 261.62, 277.18, 293.66, 311.12, \
+                 329.62, 349.22, 369.99, \
+                 391.99, 415.30, 440.00, 466.16, 466.16, \
+                 523.25, 554.36, 587.33, 622.25, 659.22};
+                 
+//Frequency as a number
+float SONIDO;
+
+//--- --- ---
+//frequency genetaor? idk
+void MyCallback(float **in, float **out, size_t size) {
+  osc.SetFreq(SONIDO);
+  for (size_t i = 0; i < size; i++) {
+    float sig = osc.Process();
+
+    for (size_t chn = 0; chn < num_channels; chn++) {
+      out[chn][i] = sig;
+    }
+  }
+}
+
+//--- --- ---
+void setup() {
+  pinMode(Apin, INPUT);
+  pinMode(Dpin1, INPUT);
+  pinMode(Dpin2, INPUT);
+  Serial.begin(9600);
+
+  float sample_rate;
+  // Initialize for Daisy pod at 48kHz
+  hw = DAISY.init(DAISY_SEED, AUDIO_SR_48K);
+  num_channels = hw.num_channels;
+  sample_rate = DAISY.get_samplerate();
+
+  osc.Init(sample_rate);
+  osc.SetFreq(SONIDO);
+  osc.SetAmp(0.5);
+  osc.SetWaveform(osc.WAVE_SIN);
+
+  DAISY.begin(MyCallback);
+}
+
+//--- --- ---
+void loop() {
+  bit1 = digitalRead(Dpin1);
+  bit2 = digitalRead(Dpin2);
+  dato = analogRead(Apin);
+
+  
+  if (bit1 && !bit2) { // Si bit1 es verdadero y bit2 es falso, dividir por 2
+  for (int i = 0; i < sizeof(MyFreqs)/sizeof(float); i++) {
+    MyFreqs[i] /= 2;
+  } 
+} else if (!bit1 && bit2) { // Si bit1 es falso y bit2 es verdadero, multiplicar por 2
+  for (int i = 0; i < sizeof(MyFreqs)/sizeof(float); i++) {
+    MyFreqs[i] *= 2;
+  } 
+} 
+
+  
+  //Serial.println(dato);
+  //delay(100);
+  
+
+  if (dato>= 445 && dato <=475) {
+    SONIDO = MyFreqs[0];//la
+  } else if (dato>= 500 && dato <=520) {
+    SONIDO = MyFreqs[1];//la#
+  } else if (dato>= 525 && dato <=545) {
+    SONIDO = MyFreqs[2];//si
+  } else if (dato>= 550 && dato <=565) {
+    SONIDO = MyFreqs[3];//do
+  } else if (dato>= 610 && dato <=630) {
+    SONIDO = MyFreqs[4];//do#  
+  } else if (dato>= 635 && dato <=650) {
+    SONIDO = MyFreqs[5];//re
+  } else if (dato>= 660 && dato <=685) {
+    SONIDO = MyFreqs[6];//re#
+  } else if (dato>= 695 && dato <=715) {
+    SONIDO = MyFreqs[7];//mi
+  } else if (dato>= 735 && dato <=755) {
+    SONIDO = MyFreqs[8];//fa
+  } else if (dato>= 765 && dato <=785) {
+    SONIDO = MyFreqs[9];//fa#
+  } else if (dato>= 795 && dato <=815) {
+    SONIDO = MyFreqs[10];//sol
+  } else if (dato>= 820 && dato <=840) {
+    SONIDO = MyFreqs[11];//sol#
+  } else if (dato>= 850 && dato <=870) {
+    SONIDO = MyFreqs[12];//la
+  } else if (dato>= 875 && dato <=885) {
+    SONIDO = MyFreqs[13];//la#
+  } else if (dato>= 890 && dato <=905) {
+    SONIDO = MyFreqs[14];//si
+  } else if (dato>= 910 && dato <=925) {
+    SONIDO = MyFreqs[15];//do
+  } else if (dato>= 935 && dato <=950) {
+    SONIDO = MyFreqs[16];//do#
+  } else if (dato>= 955 && dato <=965) {
+    SONIDO = MyFreqs[17];//re
+  } else if (dato>= 980 && dato <=990) {
+    SONIDO = MyFreqs[18];//re#
+  } else if (dato>= 1000 && dato <=1020) {
+    SONIDO = MyFreqs[19];//mi
+  } else {
+    SONIDO = 0.00;
+    //delay(100);
+    
+  }
+
+}
